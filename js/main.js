@@ -77,12 +77,16 @@ async function loadProducts() {
 
 /* ─── Slider ─────────────────────────────────────────────── */
 function renderSlider() {
-  if (!allProducts.length) {
-    sliderTrack.innerHTML = '<p style="padding:40px;color:#aaa">Nenhum produto ainda.</p>'
+  const list = filteredProducts()
+  const heroCount = document.getElementById('hero-count')
+  if (heroCount) heroCount.textContent = list.length ? `— ${list.length} peça${list.length > 1 ? 's' : ''}` : ''
+
+  if (!list.length) {
+    sliderTrack.innerHTML = '<p style="padding:40px;color:#666;font-size:14px">Nenhum produto nessa categoria.</p>'
     return
   }
 
-  sliderTrack.innerHTML = allProducts.map(p => {
+  sliderTrack.innerHTML = list.map(p => {
     const totalStock = (p.product_sizes || []).reduce((s, sz) => s + sz.stock, 0)
     const cat = CATEGORIES[p.category] || p.category
 
@@ -156,14 +160,21 @@ function initSliderControls() {
   }
 }
 
-/* ─── Filter ────────────────────────────────────────────── */
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-    currentCat = btn.dataset.cat
-    renderProducts()
+/* ─── Filter (hero cats + filter bar abaixo, sincronizados) ─ */
+function setCategory(cat) {
+  currentCat = cat
+  document.querySelectorAll('.filter-btn, .hero-cat-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === cat)
   })
+  renderSlider()
+  renderProducts()
+}
+
+document.querySelectorAll('.hero-cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => setCategory(btn.dataset.cat))
+})
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => setCategory(btn.dataset.cat))
 })
 
 function filteredProducts() {
