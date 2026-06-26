@@ -30,6 +30,35 @@ const cartTotal   = document.getElementById('cart-total')
 const cartCount   = document.getElementById('cart-count')
 const waBtnEl     = document.getElementById('whatsapp-btn')
 
+/* ─── Banner carousel ───────────────────────────────────── */
+;(function () {
+  const slides  = document.getElementById('hero-slides')
+  const dots    = document.querySelectorAll('.banner-dot')
+  const TOTAL   = 3
+  let current   = 0
+  let timer
+
+  function goTo(idx) {
+    current = (idx + TOTAL) % TOTAL
+    slides.style.transform = `translateX(-${current * (100 / TOTAL)}%)`
+    dots.forEach((d, i) => d.classList.toggle('active', i === current))
+  }
+
+  function next() { goTo(current + 1) }
+  function prev() { goTo(current - 1) }
+
+  function startAuto() {
+    clearInterval(timer)
+    timer = setInterval(next, 4000)
+  }
+
+  document.getElementById('banner-next').addEventListener('click', () => { next(); startAuto() })
+  document.getElementById('banner-prev').addEventListener('click', () => { prev(); startAuto() })
+  dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.idx); startAuto() }))
+
+  startAuto()
+})()
+
 /* ─── Nav ───────────────────────────────────────────────── */
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10)

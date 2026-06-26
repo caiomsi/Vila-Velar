@@ -38,16 +38,61 @@
     </div>
   </nav>
 
-  <!-- ─── Hero: logo + categorias + slider (tudo na 1ª tela) -->
+  <!-- ─── Hero: banner + categorias + slider (tudo na 1ª tela) -->
   <section id="hero">
 
-    <!-- Topo: logo compacta + nome da marca -->
-    <div class="hero-top">
-      <!-- Troque este bloco por <img src="logo.png" class="hero-logo-img"> quando tiver a logo -->
-      <div class="hero-logo-mark" id="brand-logo">VV</div>
-      <div class="hero-brand-text">
-        <h1 class="hero-brand-name">VILA<span>&nbsp;VELAR</span></h1>
-        <p class="hero-brand-sub">Moda Masculina</p>
+    <!-- Carrossel de 3 slides -->
+    <div class="hero-banner">
+      <div class="hero-slides" id="hero-slides">
+
+        <!-- Slide 1: Logo da marca -->
+        <div class="hero-slide">
+          <div class="hero-slide-logo-wrap">
+            <div class="hero-logo-mark" id="brand-logo">VV</div>
+            <h1 class="hero-brand-name">VILA<span>&nbsp;VELAR</span></h1>
+            <p class="hero-brand-sub">Moda Masculina</p>
+          </div>
+        </div>
+
+        <!-- Slide 2: Substitua pelo <img src="banner1.jpg"> quando tiver a foto -->
+        <div class="hero-slide hero-slide-ph">
+          <div class="hero-slide-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Foto 1 — Adicione sua imagem aqui</span>
+          </div>
+        </div>
+
+        <!-- Slide 3: Substitua pelo <img src="banner2.jpg"> quando tiver a foto -->
+        <div class="hero-slide hero-slide-ph">
+          <div class="hero-slide-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Foto 2 — Adicione sua imagem aqui</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Setas -->
+      <button class="banner-arrow banner-prev" id="banner-prev" aria-label="Anterior">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <button class="banner-arrow banner-next" id="banner-next" aria-label="Próximo">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <!-- Pontos indicadores -->
+      <div class="banner-dots">
+        <button class="banner-dot active" data-idx="0"></button>
+        <button class="banner-dot" data-idx="1"></button>
+        <button class="banner-dot" data-idx="2"></button>
       </div>
     </div>
 

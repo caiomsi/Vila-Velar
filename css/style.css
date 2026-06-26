@@ -135,60 +135,149 @@ ul { list-style: none; }
   overflow: hidden;
 }
 
-/* Topo compacto com logo + nome */
-.hero-top {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 28px;
+/* ─── Hero banner (carrossel 3 slides) ──────────────────── */
+.hero-banner {
+  flex: 0 0 48%;
+  position: relative;
+  overflow: hidden;
   border-bottom: 1px solid rgba(255,255,255,.07);
-  flex-shrink: 0;
 }
 
-/* Logo mark pequena — troque por <img class="hero-logo-img"> quando tiver a logo */
+.hero-slides {
+  display: flex;
+  width: 300%;
+  height: 100%;
+  transition: transform .55s cubic-bezier(.4,0,.2,1);
+}
+
+.hero-slide {
+  flex: 0 0 33.333%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+}
+
+/* Slide 1 — logo da marca */
+.hero-slide-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
 .hero-logo-mark {
-  width: 52px;
-  height: 52px;
-  border: 1.5px solid rgba(245,197,24,.5);
-  border-radius: 10px;
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(245,197,24,.5);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-head);
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 900;
   color: var(--yellow);
   letter-spacing: -.01em;
-  flex-shrink: 0;
 }
-/* When real logo image is used: */
 .hero-logo-img {
-  width: 52px;
-  height: 52px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
-  flex-shrink: 0;
 }
-
-.hero-brand-text { line-height: 1; }
 
 .hero-brand-name {
   font-family: var(--font-head);
-  font-size: 26px;
+  font-size: clamp(28px, 5vw, 52px);
   font-weight: 900;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--white);
+  line-height: 1;
 }
 .hero-brand-name span { color: var(--yellow); }
 
 .hero-brand-sub {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: .2em;
+  letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--gray-400);
-  margin-top: 3px;
+  margin-top: -6px;
 }
+
+/* Slides 2 e 3 — fotos (placeholder) */
+.hero-slide-ph { background: #0f0f0f; }
+
+.hero-slide-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: rgba(255,255,255,.2);
+}
+.hero-slide-placeholder svg { width: 48px; height: 48px; }
+.hero-slide-placeholder span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Imagem real (quando o usuário fornecer) */
+.hero-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+/* Setas do banner */
+.banner-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px; height: 38px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 50%;
+  color: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background .2s, border-color .2s;
+}
+.banner-arrow:hover { background: var(--yellow); border-color: var(--yellow); color: var(--black); }
+.banner-arrow svg { width: 16px; height: 16px; }
+.banner-prev { left: 14px; }
+.banner-next { right: 14px; }
+
+/* Pontos indicadores */
+.banner-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 10;
+}
+.banner-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.3);
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s, transform .2s;
+}
+.banner-dot.active { background: var(--yellow); transform: scale(1.3); }
 
 /* Faixa de categorias */
 .hero-cats {
