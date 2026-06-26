@@ -1,6 +1,6 @@
 /* ─── Config ────────────────────────────────────────────── */
 // Replace with the store's WhatsApp number (country code + number, no spaces/dashes)
-const WHATSAPP_NUMBER = '5500000000000'
+const WHATSAPP_NUMBER = '5534991458213'
 
 const CATEGORIES = {
   camisetas: 'Camisetas',
