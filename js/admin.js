@@ -48,7 +48,8 @@ db.auth.onAuthStateChange((_event, session) => {
 async function checkAdminCount() {
   const { data } = await db.rpc('get_admin_count')
   const hasAdmin = data > 0
-  document.getElementById('setup-toggle-wrap').style.display = hasAdmin ? 'block' : 'none'
+  // Hide "Criar conta" link once an admin exists
+  document.getElementById('setup-toggle-wrap').style.display = hasAdmin ? 'none' : 'block'
   if (!hasAdmin) showSetup()
 }
 
