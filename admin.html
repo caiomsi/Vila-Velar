@@ -25,35 +25,10 @@
       <div id="login-form">
         <h3 class="auth-mode-title">Entrar</h3>
         <div class="form-field">
-          <label for="login-email">E-mail</label>
-          <input type="email" id="login-email" placeholder="admin@vilavalar.com" autocomplete="email" />
-        </div>
-        <div class="form-field">
-          <label for="login-password">Senha</label>
+          <label for="login-password">Senha do administrador</label>
           <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
         </div>
         <button class="btn-primary" id="btn-login">Entrar</button>
-        <div class="auth-toggle" id="setup-toggle-wrap">
-          <span>Primeiro acesso? </span>
-          <button id="show-setup">Criar conta de administrador</button>
-        </div>
-      </div>
-
-      <!-- Setup form (first time only) -->
-      <div id="setup-form" style="display:none">
-        <h3 class="auth-mode-title">Criar Admin</h3>
-        <div class="form-field">
-          <label for="setup-email">E-mail</label>
-          <input type="email" id="setup-email" placeholder="admin@vilavalar.com" autocomplete="email" />
-        </div>
-        <div class="form-field">
-          <label for="setup-password">Senha (mín. 6 caracteres)</label>
-          <input type="password" id="setup-password" placeholder="••••••••" autocomplete="new-password" />
-        </div>
-        <button class="btn-primary" id="btn-setup">Criar conta</button>
-        <div class="auth-toggle">
-          <button id="show-login">Já tenho conta</button>
-        </div>
       </div>
     </div>
   </div>
@@ -64,7 +39,7 @@
     <header class="admin-header">
       <div class="admin-logo">VILA<span>&nbsp;VELAR</span><small>Admin</small></div>
       <div class="admin-header-right">
-        <span class="admin-user" id="admin-user-email"></span>
+        <span class="admin-user">Administrador</span>
         <button class="btn-logout" id="btn-logout">Sair</button>
       </div>
     </header>

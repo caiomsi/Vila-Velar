@@ -18,13 +18,12 @@ let pendingFiles = []
 let existingImages = []
 let sizeType     = 'letters'
 
+const ADMIN_EMAIL = 'admin@vilavela.com'
+
 /* ─── DOM refs ──────────────────────────────────────────── */
 const authScreen  = document.getElementById('auth-screen')
 const adminApp    = document.getElementById('admin-app')
 const authError   = document.getElementById('auth-error')
-
-const loginForm   = document.getElementById('login-form')
-const setupForm   = document.getElementById('setup-form')
 
 const modalOverlay  = document.getElementById('modal-overlay')
 const confirmModal  = document.getElementById('confirm-modal')
@@ -36,77 +35,36 @@ db.auth.onAuthStateChange((_event, session) => {
   if (session) {
     authScreen.style.display = 'none'
     adminApp.style.display = 'block'
-    document.getElementById('admin-user-email').textContent = session.user.email
     loadProducts()
   } else {
     authScreen.style.display = ''
     adminApp.style.display = 'none'
-    checkAdminCount()
   }
 })
 
-async function checkAdminCount() {
-  const { data } = await db.rpc('get_admin_count')
-  const hasAdmin = data > 0
-  // Hide "Criar conta" link once an admin exists
-  document.getElementById('setup-toggle-wrap').style.display = hasAdmin ? 'none' : 'block'
-  if (!hasAdmin) showSetup()
-}
-
 document.getElementById('btn-login').addEventListener('click', async () => {
-  const email = document.getElementById('login-email').value.trim()
-  const pass  = document.getElementById('login-password').value
-  if (!email || !pass) { showAuthError('Preencha e-mail e senha.'); return }
+  const pass = document.getElementById('login-password').value
+  if (!pass) { showAuthError('Digite a senha.'); return }
 
   const btn = document.getElementById('btn-login')
   btn.disabled = true; btn.textContent = 'Entrando...'
 
-  const { error } = await db.auth.signInWithPassword({ email, password: pass })
+  const { error } = await db.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pass })
   if (error) {
-    showAuthError('E-mail ou senha incorretos.')
+    showAuthError('Senha incorreta.')
     btn.disabled = false; btn.textContent = 'Entrar'
   }
 })
 
-document.getElementById('btn-setup').addEventListener('click', async () => {
-  const email = document.getElementById('setup-email').value.trim()
-  const pass  = document.getElementById('setup-password').value
-
-  if (!email || !pass) { showAuthError('Preencha todos os campos.'); return }
-  if (pass.length < 6) { showAuthError('A senha deve ter pelo menos 6 caracteres.'); return }
-
-  const { data: count } = await db.rpc('get_admin_count')
-  if (count > 0) { showAuthError('Já existe uma conta de administrador.'); return }
-
-  const btn = document.getElementById('btn-setup')
-  btn.disabled = true; btn.textContent = 'Criando...'
-
-  const { error } = await db.auth.signUp({ email, password: pass })
-  if (error) {
-    showAuthError(error.message)
-    btn.disabled = false; btn.textContent = 'Criar conta'
-  } else {
-    showAuthError('Conta criada! Verifique seu e-mail e depois entre.', 'info')
-    btn.disabled = false; btn.textContent = 'Criar conta'
-    showLogin()
-  }
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-login').click()
 })
 
-document.getElementById('show-setup').addEventListener('click', showSetup)
-document.getElementById('show-login').addEventListener('click', showLogin)
 document.getElementById('btn-logout').addEventListener('click', () => db.auth.signOut())
 
-function showLogin() {
-  loginForm.style.display = ''; setupForm.style.display = 'none'
-  authError.className = 'auth-error'; authError.textContent = ''
-}
-function showSetup() {
-  loginForm.style.display = 'none'; setupForm.style.display = ''
-  authError.className = 'auth-error'; authError.textContent = ''
-}
-function showAuthError(msg, type = 'error') {
+function showAuthError(msg) {
   authError.textContent = msg
-  authError.className = `auth-error show ${type === 'info' ? 'info' : ''}`
+  authError.className = 'auth-error show'
 }
 
 /* ─── Load products ─────────────────────────────────────── */
