@@ -19,15 +19,16 @@ let currentCat  = 'todos'
 let cart        = []
 
 /* ─── DOM refs ──────────────────────────────────────────── */
-const grid       = document.getElementById('products-grid')
-const countEl    = document.getElementById('section-count')
-const cartDrawer = document.getElementById('cart-drawer')
-const cartOverlay= document.getElementById('cart-overlay')
-const cartItems  = document.getElementById('cart-items')
-const cartFooter = document.getElementById('cart-footer')
-const cartTotal  = document.getElementById('cart-total')
-const cartCount  = document.getElementById('cart-count')
-const waBtnEl    = document.getElementById('whatsapp-btn')
+const grid        = document.getElementById('products-grid')
+const countEl     = document.getElementById('section-count')
+const sliderTrack = document.getElementById('slider-track')
+const cartDrawer  = document.getElementById('cart-drawer')
+const cartOverlay = document.getElementById('cart-overlay')
+const cartItems   = document.getElementById('cart-items')
+const cartFooter  = document.getElementById('cart-footer')
+const cartTotal   = document.getElementById('cart-total')
+const cartCount   = document.getElementById('cart-count')
+const waBtnEl     = document.getElementById('whatsapp-btn')
 
 /* ─── Nav ───────────────────────────────────────────────── */
 window.addEventListener('scroll', () => {
@@ -70,7 +71,89 @@ async function loadProducts() {
   }
 
   allProducts = products || []
+  renderSlider()
   renderProducts()
+}
+
+/* ─── Slider ─────────────────────────────────────────────── */
+function renderSlider() {
+  if (!allProducts.length) {
+    sliderTrack.innerHTML = '<p style="padding:40px;color:#aaa">Nenhum produto ainda.</p>'
+    return
+  }
+
+  sliderTrack.innerHTML = allProducts.map(p => {
+    const totalStock = (p.product_sizes || []).reduce((s, sz) => s + sz.stock, 0)
+    const cat = CATEGORIES[p.category] || p.category
+
+    const imgHTML = p.images && p.images.length
+      ? `<img src="${p.images[0]}" alt="${p.name}" loading="lazy" />`
+      : `<div class="slider-card-placeholder">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+               d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+           </svg>
+           <span>Vila Velar</span>
+         </div>`
+
+    const badge = totalStock === 0
+      ? '<span class="slider-badge out">Esgotado</span>'
+      : p.featured ? '<span class="slider-badge">Destaque</span>' : ''
+
+    return `
+      <div class="slider-card" data-id="${p.id}">
+        <div class="slider-card-img-wrap">
+          ${imgHTML}
+          ${badge}
+        </div>
+        <div class="slider-card-info">
+          <p class="slider-card-cat">${cat}</p>
+          <h3 class="slider-card-name">${p.name}</h3>
+          <p class="slider-card-price">${formatPrice(p.price)}</p>
+        </div>
+      </div>`
+  }).join('')
+
+  sliderTrack.querySelectorAll('.slider-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.getElementById(card.dataset.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const gridCard = grid.querySelector(`[data-id="${card.dataset.id}"]`)
+      if (gridCard) gridCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      else document.getElementById('produtos').scrollIntoView({ behavior: 'smooth' })
+    })
+  })
+
+  initSliderControls()
+}
+
+function initSliderControls() {
+  const prev = document.getElementById('slider-prev')
+  const next = document.getElementById('slider-next')
+  const cardW = 280 + 20
+
+  prev.addEventListener('click', () => sliderTrack.scrollBy({ left: -cardW * 2, behavior: 'smooth' }))
+  next.addEventListener('click', () => sliderTrack.scrollBy({ left:  cardW * 2, behavior: 'smooth' }))
+
+  sliderTrack.addEventListener('scroll', updateArrows)
+  updateArrows()
+
+  /* drag to scroll */
+  let isDown = false, startX, scrollLeft
+  sliderTrack.addEventListener('mousedown', e => {
+    isDown = true; startX = e.pageX - sliderTrack.offsetLeft; scrollLeft = sliderTrack.scrollLeft
+  })
+  sliderTrack.addEventListener('mouseleave', () => isDown = false)
+  sliderTrack.addEventListener('mouseup',    () => isDown = false)
+  sliderTrack.addEventListener('mousemove', e => {
+    if (!isDown) return
+    e.preventDefault()
+    sliderTrack.scrollLeft = scrollLeft - (e.pageX - sliderTrack.offsetLeft - startX)
+  })
+
+  function updateArrows() {
+    prev.disabled = sliderTrack.scrollLeft < 10
+    next.disabled = sliderTrack.scrollLeft >= sliderTrack.scrollWidth - sliderTrack.clientWidth - 10
+  }
 }
 
 /* ─── Filter ────────────────────────────────────────────── */
