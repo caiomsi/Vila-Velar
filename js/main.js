@@ -1,7 +1,3 @@
-/* ─── Config ────────────────────────────────────────────── */
-// Replace with the store's WhatsApp number (country code + number, no spaces/dashes)
-const WHATSAPP_NUMBER = '5534991458213'
-
 const CATEGORIES = {
   camisetas: 'Camisetas',
   polos:     'Polos',
@@ -32,10 +28,10 @@ const waBtnEl     = document.getElementById('whatsapp-btn')
 
 /* ─── Banner carousel ───────────────────────────────────── */
 ;(function () {
-  const slides  = document.getElementById('hero-slides')
-  const dots    = document.querySelectorAll('.banner-dot')
-  const TOTAL   = 3
-  let current   = 0
+  const slides = document.getElementById('hero-slides')
+  const dots   = document.querySelectorAll('.banner-dot')
+  const TOTAL  = 3
+  let current  = 0
   let timer
 
   function goTo(idx) {
@@ -74,7 +70,7 @@ document.getElementById('cart-close').addEventListener('click', closeCart)
 cartOverlay.addEventListener('click', closeCart)
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCart() })
 
-function openCart()  {
+function openCart() {
   cartDrawer.classList.add('open')
   cartOverlay.classList.add('open')
   document.body.style.overflow = 'hidden'
@@ -86,22 +82,104 @@ function closeCart() {
   document.body.style.overflow = ''
 }
 
-/* ─── Load products ─────────────────────────────────────── */
-async function loadProducts() {
-  const { data: products, error } = await db
-    .from('products')
-    .select('*, product_sizes(*)')
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false })
+/* ─── CSV parser ─────────────────────────────────────────── */
+function parseCSV(text) {
+  const rows = []
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  for (const line of lines) {
+    if (!line.trim()) continue
+    const fields = []
+    let cur = '', inQ = false
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i]
+      if (c === '"') {
+        if (inQ && line[i + 1] === '"') { cur += '"'; i++ }
+        else inQ = !inQ
+      } else if (c === ',' && !inQ) {
+        fields.push(cur); cur = ''
+      } else {
+        cur += c
+      }
+    }
+    fields.push(cur)
+    rows.push(fields)
+  }
+  return rows
+}
 
-  if (error) {
-    grid.innerHTML = '<div class="products-empty"><h3>Erro ao carregar produtos</h3><p>Tente recarregar a página.</p></div>'
+/* ─── Sizes parser — "P:5,M:10,G:8" → { P: 5, M: 10, G: 8 } ── */
+function parseSizes(str) {
+  const result = {}
+  if (!str) return result
+  str.split(',').forEach(pair => {
+    const parts = pair.trim().split(':')
+    const size  = parts[0].trim().toUpperCase()
+    const stock = parseInt(parts[1]) || 0
+    if (size) result[size] = stock
+  })
+  return result
+}
+
+/* ─── Load products from Google Sheets CSV ──────────────── */
+async function loadProducts() {
+  if (!SHEET_CSV_URL || SHEET_CSV_URL === 'COLE_AQUI_A_URL_DA_PLANILHA') {
+    grid.innerHTML = `
+      <div class="products-empty">
+        <h3>Planilha não configurada</h3>
+        <p>Edite o arquivo <strong>js/config.js</strong> e cole a URL da sua planilha.</p>
+      </div>`
+    sliderTrack.innerHTML = ''
     return
   }
 
-  allProducts = products || []
-  renderSlider()
-  renderProducts()
+  try {
+    const res = await fetch(SHEET_CSV_URL)
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const text = await res.text()
+    const rows = parseCSV(text)
+
+    if (rows.length < 2) {
+      allProducts = []
+      renderSlider()
+      renderProducts()
+      return
+    }
+
+    const headers = rows[0].map(h =>
+      h.trim().toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '') // remove acentos
+        .replace(/\s+/g, '_')
+    )
+
+    allProducts = rows.slice(1).map((row, i) => {
+      const raw = {}
+      headers.forEach((h, j) => raw[h] = (row[j] || '').trim())
+
+      return {
+        id:          `row_${i}`,
+        name:        raw.nome   || raw.name        || '',
+        category:    (raw.categoria || raw.category || '').toLowerCase(),
+        price:       parseFloat((raw.preco || raw.price || '0').replace(',', '.')),
+        description: raw.descricao || raw.description || '',
+        image:       raw.imagem || raw.image || raw.foto || raw.photo || '',
+        sizes:       parseSizes(raw.tamanhos || raw.sizes || ''),
+        active:      (raw.ativo || raw.active || 'TRUE').toUpperCase() !== 'FALSE',
+        featured:    (raw.destaque || raw.featured || 'FALSE').toUpperCase() === 'TRUE',
+      }
+    })
+    .filter(p => p.active && p.name)
+    .sort((a, b) => b.featured - a.featured)
+
+    renderSlider()
+    renderProducts()
+  } catch (e) {
+    grid.innerHTML = `
+      <div class="products-empty">
+        <h3>Erro ao carregar produtos</h3>
+        <p>Verifique se a URL da planilha está correta em <strong>js/config.js</strong>.</p>
+      </div>`
+    sliderTrack.innerHTML = ''
+  }
 }
 
 /* ─── Slider ─────────────────────────────────────────────── */
@@ -116,11 +194,11 @@ function renderSlider() {
   }
 
   sliderTrack.innerHTML = list.map(p => {
-    const totalStock = (p.product_sizes || []).reduce((s, sz) => s + sz.stock, 0)
+    const totalStock = Object.values(p.sizes).reduce((s, v) => s + v, 0)
     const cat = CATEGORIES[p.category] || p.category
 
-    const imgHTML = p.images && p.images.length
-      ? `<img src="${p.images[0]}" alt="${p.name}" loading="lazy" />`
+    const imgHTML = p.image
+      ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
       : `<div class="slider-card-placeholder">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -149,7 +227,6 @@ function renderSlider() {
 
   sliderTrack.querySelectorAll('.slider-card').forEach(card => {
     card.addEventListener('click', () => {
-      document.getElementById(card.dataset.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       const gridCard = grid.querySelector(`[data-id="${card.dataset.id}"]`)
       if (gridCard) gridCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
       else document.getElementById('produtos').scrollIntoView({ behavior: 'smooth' })
@@ -160,17 +237,16 @@ function renderSlider() {
 }
 
 function initSliderControls() {
-  const prev = document.getElementById('slider-prev')
-  const next = document.getElementById('slider-next')
+  const prev  = document.getElementById('slider-prev')
+  const next  = document.getElementById('slider-next')
   const cardW = 280 + 20
 
-  prev.addEventListener('click', () => sliderTrack.scrollBy({ left: -cardW * 2, behavior: 'smooth' }))
-  next.addEventListener('click', () => sliderTrack.scrollBy({ left:  cardW * 2, behavior: 'smooth' }))
+  prev.onclick = () => sliderTrack.scrollBy({ left: -cardW * 2, behavior: 'smooth' })
+  next.onclick = () => sliderTrack.scrollBy({ left:  cardW * 2, behavior: 'smooth' })
 
   sliderTrack.addEventListener('scroll', updateArrows)
   updateArrows()
 
-  /* drag to scroll */
   let isDown = false, startX, scrollLeft
   sliderTrack.addEventListener('mousedown', e => {
     isDown = true; startX = e.pageX - sliderTrack.offsetLeft; scrollLeft = sliderTrack.scrollLeft
@@ -189,7 +265,7 @@ function initSliderControls() {
   }
 }
 
-/* ─── Filter (hero cats + filter bar abaixo, sincronizados) ─ */
+/* ─── Category filter ───────────────────────────────────── */
 function setCategory(cat) {
   currentCat = cat
   document.querySelectorAll('.filter-btn, .hero-cat-btn').forEach(b => {
@@ -249,12 +325,12 @@ function renderProducts() {
 }
 
 function productCardHTML(p) {
-  const sizes = (p.product_sizes || []).sort((a, b) => sizeOrder(a.size) - sizeOrder(b.size))
-  const totalStock = sizes.reduce((s, sz) => s + sz.stock, 0)
-  const cat   = CATEGORIES[p.category] || p.category
+  const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
+  const totalStock  = Object.values(p.sizes).reduce((s, v) => s + v, 0)
+  const cat = CATEGORIES[p.category] || p.category
 
-  const imgHTML = p.images && p.images.length
-    ? `<img src="${p.images[0]}" alt="${p.name}" loading="lazy" />`
+  const imgHTML = p.image
+    ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
     : `<div class="product-placeholder">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -267,15 +343,13 @@ function productCardHTML(p) {
     ? '<span class="badge-esgotado">Esgotado</span>'
     : p.featured ? '<span class="badge-novo">Destaque</span>' : ''
 
-  const sizePills = sizes.map(sz =>
-    `<button class="size-pill ${sz.stock === 0 ? 'out' : ''}"
-       data-size="${sz.size}" data-stock="${sz.stock}"
-       ${sz.stock === 0 ? 'disabled' : ''}
-       title="${sz.stock === 0 ? 'Esgotado' : sz.stock + ' em estoque'}"
-     >${sz.size}</button>`
+  const sizePills = sizeEntries.map(([size, stock]) =>
+    `<button class="size-pill ${stock === 0 ? 'out' : ''}"
+       data-size="${size}" data-stock="${stock}"
+       ${stock === 0 ? 'disabled' : ''}
+       title="${stock === 0 ? 'Esgotado' : stock + ' em estoque'}"
+     >${size}</button>`
   ).join('')
-
-  const price = formatPrice(p.price)
 
   return `
     <div class="product-card" data-id="${p.id}">
@@ -286,7 +360,7 @@ function productCardHTML(p) {
       <div class="product-info">
         <p class="product-cat">${cat}</p>
         <h3 class="product-name">${p.name}</h3>
-        <p class="product-price">${price}</p>
+        <p class="product-price">${formatPrice(p.price)}</p>
         <div class="size-pills">${sizePills}</div>
         <button class="add-btn" data-id="${p.id}" ${totalStock === 0 ? 'disabled' : ''}>
           ${totalStock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
@@ -296,8 +370,7 @@ function productCardHTML(p) {
 }
 
 function selectSize(pill) {
-  const card = pill.closest('.product-card')
-  card.querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'))
+  pill.closest('.product-card').querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'))
   pill.classList.add('selected')
 }
 
@@ -313,7 +386,7 @@ function addToCart(productId, size, stock) {
   const product = allProducts.find(p => p.id === productId)
   if (!product) return
 
-  const key     = `${productId}__${size}`
+  const key      = `${productId}__${size}`
   const existing = cart.find(i => i.key === key)
 
   if (existing) {
@@ -363,8 +436,8 @@ function renderCart() {
   }
 
   cartItems.innerHTML = cart.map(item => {
-    const img = item.product.images && item.product.images.length
-      ? `<img class="cart-item-img" src="${item.product.images[0]}" alt="${item.product.name}">`
+    const img = item.product.image
+      ? `<img class="cart-item-img" src="${item.product.image}" alt="${item.product.name}">`
       : `<div class="cart-item-img-placeholder">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -406,7 +479,6 @@ function renderCart() {
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
   cartTotal.textContent = formatPrice(subtotal)
   cartFooter.style.display = 'block'
-
   waBtnEl.href = buildWhatsAppURL()
 }
 
