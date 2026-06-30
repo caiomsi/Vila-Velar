@@ -137,7 +137,7 @@ ul { list-style: none; }
 
 /* ─── Hero banner (carrossel 3 slides) ──────────────────── */
 .hero-banner {
-  flex: 0 0 48%;
+  flex: 0 0 62%;
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid rgba(255,255,255,.07);
