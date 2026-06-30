@@ -1,7 +1,7 @@
 const CATEGORIES = {
   camisetas: 'Camisetas',
   camisas:   'Camisas',
-  sweaters:  'Sweaters',
+  sweaters:  'Suéter',
   calcas:    'Calças',
   bermudas:  'Bermudas',
   moletons:  'Moletons',
