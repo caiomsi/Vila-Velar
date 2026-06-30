@@ -511,5 +511,34 @@ function sizeOrder(size) {
   return idx === -1 ? 99 : idx
 }
 
+/* ─── Load banner images from Google Sheets ─────────────── */
+async function loadBanner() {
+  if (!BANNER_CSV_URL || BANNER_CSV_URL === 'COLE_AQUI_A_URL_DA_ABA_BANNER') return
+  try {
+    const res = await fetch(BANNER_CSV_URL)
+    if (!res.ok) return
+    const text = await res.text()
+    const rows = parseCSV(text)
+    const settings = {}
+    rows.slice(1).forEach(row => {
+      const key = (row[0] || '').trim().toLowerCase().replace(/\s+/g, '_')
+      const val = (row[1] || '').trim()
+      if (key && val) settings[key] = val
+    })
+    applyBannerImage('banner-slide-1', settings.banner_1)
+    applyBannerImage('banner-slide-2', settings.banner_2)
+  } catch (e) {
+    // placeholders permanecem se falhar
+  }
+}
+
+function applyBannerImage(slideId, url) {
+  if (!url) return
+  const slide = document.getElementById(slideId)
+  if (!slide) return
+  slide.innerHTML = `<img src="${url}" alt="Banner" />`
+}
+
 /* ─── Init ──────────────────────────────────────────────── */
+loadBanner()
 loadProducts()
