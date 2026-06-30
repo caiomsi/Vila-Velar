@@ -209,6 +209,15 @@ ul { list-style: none; }
   margin-top: -6px;
 }
 
+/* Slide 1 — logo em tela cheia */
+.hero-logo-full {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
 /* Slides 2 e 3 — fotos (placeholder) */
 .hero-slide-ph { background: #0f0f0f; }
 
