@@ -18,14 +18,14 @@ let cart        = []
 /* ─── DOM refs ──────────────────────────────────────────── */
 const grid        = document.getElementById('products-grid')
 const countEl     = document.getElementById('section-count')
-const sliderTrack = document.getElementById('slider-track')
 const cartDrawer  = document.getElementById('cart-drawer')
 const cartOverlay = document.getElementById('cart-overlay')
 const cartItems   = document.getElementById('cart-items')
 const cartFooter  = document.getElementById('cart-footer')
 const cartTotal   = document.getElementById('cart-total')
-const cartCount   = document.getElementById('cart-count')
-const waBtnEl     = document.getElementById('whatsapp-btn')
+const cartCount    = document.getElementById('cart-count')
+const cartBtnPrice = document.getElementById('cart-btn-price')
+const waBtnEl      = document.getElementById('whatsapp-btn')
 
 /* ─── Banner carousel ───────────────────────────────────── */
 ;(function () {
@@ -129,7 +129,6 @@ async function loadProducts() {
         <h3>Planilha não configurada</h3>
         <p>Edite o arquivo <strong>js/config.js</strong> e cole a URL da sua planilha.</p>
       </div>`
-    sliderTrack.innerHTML = ''
     return
   }
 
@@ -141,7 +140,6 @@ async function loadProducts() {
 
     if (rows.length < 2) {
       allProducts = []
-      renderSlider()
       renderProducts()
       return
     }
@@ -171,7 +169,6 @@ async function loadProducts() {
     .filter(p => p.active && p.name)
     .sort((a, b) => b.featured - a.featured)
 
-    renderSlider()
     renderProducts()
   } catch (e) {
     grid.innerHTML = `
@@ -179,106 +176,18 @@ async function loadProducts() {
         <h3>Erro ao carregar produtos</h3>
         <p>Verifique se a URL da planilha está correta em <strong>js/config.js</strong>.</p>
       </div>`
-    sliderTrack.innerHTML = ''
-  }
-}
-
-/* ─── Slider ─────────────────────────────────────────────── */
-function renderSlider() {
-  const list = filteredProducts()
-  const heroCount = document.getElementById('hero-count')
-  if (heroCount) heroCount.textContent = list.length ? `— ${list.length} peça${list.length > 1 ? 's' : ''}` : ''
-
-  if (!list.length) {
-    sliderTrack.innerHTML = '<p style="padding:40px;color:#666;font-size:14px">Nenhum produto nessa categoria.</p>'
-    return
-  }
-
-  sliderTrack.innerHTML = list.map(p => {
-    const totalStock = Object.values(p.sizes).reduce((s, v) => s + v, 0)
-    const cat = CATEGORIES[p.category] || p.category
-
-    const imgHTML = p.image
-      ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
-      : `<div class="slider-card-placeholder">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-               d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
-           </svg>
-           <span>Vila Velar</span>
-         </div>`
-
-    const badge = totalStock === 0
-      ? '<span class="slider-badge out">Esgotado</span>'
-      : p.featured ? '<span class="slider-badge">Destaque</span>' : ''
-
-    return `
-      <div class="slider-card" data-id="${p.id}">
-        <div class="slider-card-img-wrap">
-          ${imgHTML}
-          ${badge}
-        </div>
-        <div class="slider-card-info">
-          <p class="slider-card-cat">${cat}</p>
-          <h3 class="slider-card-name">${p.name}</h3>
-          <p class="slider-card-price">${formatPrice(p.price)}</p>
-        </div>
-      </div>`
-  }).join('')
-
-  sliderTrack.querySelectorAll('.slider-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const gridCard = grid.querySelector(`[data-id="${card.dataset.id}"]`)
-      if (gridCard) gridCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      else document.getElementById('produtos').scrollIntoView({ behavior: 'smooth' })
-    })
-  })
-
-  initSliderControls()
-}
-
-function initSliderControls() {
-  const prev  = document.getElementById('slider-prev')
-  const next  = document.getElementById('slider-next')
-  const cardW = 280 + 20
-
-  prev.onclick = () => sliderTrack.scrollBy({ left: -cardW * 2, behavior: 'smooth' })
-  next.onclick = () => sliderTrack.scrollBy({ left:  cardW * 2, behavior: 'smooth' })
-
-  sliderTrack.addEventListener('scroll', updateArrows)
-  updateArrows()
-
-  let isDown = false, startX, scrollLeft
-  sliderTrack.addEventListener('mousedown', e => {
-    isDown = true; startX = e.pageX - sliderTrack.offsetLeft; scrollLeft = sliderTrack.scrollLeft
-  })
-  sliderTrack.addEventListener('mouseleave', () => isDown = false)
-  sliderTrack.addEventListener('mouseup',    () => isDown = false)
-  sliderTrack.addEventListener('mousemove', e => {
-    if (!isDown) return
-    e.preventDefault()
-    sliderTrack.scrollLeft = scrollLeft - (e.pageX - sliderTrack.offsetLeft - startX)
-  })
-
-  function updateArrows() {
-    prev.disabled = sliderTrack.scrollLeft < 10
-    next.disabled = sliderTrack.scrollLeft >= sliderTrack.scrollWidth - sliderTrack.clientWidth - 10
   }
 }
 
 /* ─── Category filter ───────────────────────────────────── */
 function setCategory(cat) {
   currentCat = cat
-  document.querySelectorAll('.filter-btn, .hero-cat-btn').forEach(b => {
+  document.querySelectorAll('.filter-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.cat === cat)
   })
-  renderSlider()
   renderProducts()
 }
 
-document.querySelectorAll('.hero-cat-btn').forEach(btn => {
-  btn.addEventListener('click', () => setCategory(btn.dataset.cat))
-})
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => setCategory(btn.dataset.cat))
 })
@@ -416,9 +325,11 @@ function changeQty(key, delta) {
 }
 
 function updateCartCount() {
-  const total = cart.reduce((s, i) => s + i.qty, 0)
+  const total    = cart.reduce((s, i) => s + i.qty, 0)
+  const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
   cartCount.textContent = total
   cartCount.classList.toggle('visible', total > 0)
+  if (cartBtnPrice) cartBtnPrice.textContent = formatPrice(subtotal)
 }
 
 /* ─── Render cart ───────────────────────────────────────── */
