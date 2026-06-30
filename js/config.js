@@ -40,6 +40,7 @@
     configuracao  |  valor
     banner_1      |  https://... (URL da Foto 1 do carrossel)
     banner_2      |  https://... (URL da Foto 2 do carrossel)
+    promo_texto   |  FRETE GRÁTIS ACIMA DE R$299 • USE VV10 • NOVA COLEÇÃO •
 
   Para publicar essa aba:
     Arquivo → Compartilhar → Publicar na web
@@ -47,8 +48,8 @@
     → Clique em "Publicar" → Copie o link
     → Cole abaixo em BANNER_CSV_URL
 
-  Para trocar as fotos do banner no futuro: basta editar as
-  células da aba Banner e recarregar o site.
+  Para trocar o texto da faixa ou as fotos do banner no futuro:
+  basta editar as células da aba Banner e recarregar o site.
 
   ════════════════════════════════════════════════════════════
   DICA — Como hospedar as fotos no Google Drive:
@@ -70,3 +71,7 @@ const BANNER_CSV_URL = 'COLE_AQUI_A_URL_DA_ABA_BANNER'
 
 // WhatsApp do lojista (código do país + número, sem espaços)
 const WHATSAPP_NUMBER = '5534991458213'
+
+// Texto padrão da faixa de promoção no topo
+// (substitua aqui ou controle pela planilha com a chave promo_texto)
+const PROMO_TEXT = 'FRETE GRÁTIS ACIMA DE R$299 • USE CÓDIGO VV10 — 10% OFF • NOVA COLEÇÃO 2025 DISPONÍVEL • TROCA FÁCIL E RÁPIDA • FRETE GRÁTIS ACIMA DE R$299 • USE CÓDIGO VV10 — 10% OFF • NOVA COLEÇÃO 2025 DISPONÍVEL •'

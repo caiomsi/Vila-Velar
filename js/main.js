@@ -29,16 +29,18 @@ const waBtnEl      = document.getElementById('whatsapp-btn')
 
 /* ─── Banner carousel ───────────────────────────────────── */
 ;(function () {
-  const slides = document.getElementById('hero-slides')
-  const dots   = document.querySelectorAll('.banner-dot')
-  const TOTAL  = 3
-  let current  = 0
+  const slides     = document.getElementById('hero-slides')
+  const dots       = document.querySelectorAll('.banner-dot')
+  const counterEl  = document.getElementById('banner-current')
+  const TOTAL      = 3
+  let current      = 0
   let timer
 
   function goTo(idx) {
     current = (idx + TOTAL) % TOTAL
     slides.style.transform = `translateX(-${current * (100 / TOTAL)}%)`
     dots.forEach((d, i) => d.classList.toggle('active', i === current))
+    if (counterEl) counterEl.textContent = String(current + 1).padStart(2, '0')
   }
 
   function next() { goTo(current + 1) }
@@ -211,7 +213,7 @@ function renderProducts() {
     return
   }
 
-  grid.innerHTML = list.map(p => productCardHTML(p)).join('')
+  grid.innerHTML = list.map((p, i) => productCardHTML(p, i)).join('')
 
   grid.querySelectorAll('.size-pill').forEach(pill => {
     pill.addEventListener('click', () => selectSize(pill))
@@ -234,10 +236,11 @@ function renderProducts() {
   })
 }
 
-function productCardHTML(p) {
+function productCardHTML(p, idx = 0) {
   const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
   const totalStock  = Object.values(p.sizes).reduce((s, v) => s + v, 0)
   const cat = CATEGORIES[p.category] || p.category
+  const num = String(idx + 1).padStart(2, '0')
 
   const imgHTML = p.image
     ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
@@ -265,6 +268,7 @@ function productCardHTML(p) {
     <div class="product-card" data-id="${p.id}">
       <div class="product-img-wrap">
         ${imgHTML}
+        <span class="product-num" aria-hidden="true">${num}</span>
         ${badge}
       </div>
       <div class="product-info">
@@ -439,6 +443,7 @@ async function loadBanner() {
     })
     applyBannerImage('banner-slide-1', settings.banner_1)
     applyBannerImage('banner-slide-2', settings.banner_2)
+    if (settings.promo_texto) setAnnouncementText(settings.promo_texto)
   } catch (e) {
     // placeholders permanecem se falhar
   }
@@ -451,6 +456,15 @@ function applyBannerImage(slideId, url) {
   slide.innerHTML = `<img src="${url}" alt="Banner" />`
 }
 
+/* ─── Announcement bar ──────────────────────────────────── */
+function setAnnouncementText(text) {
+  const el1 = document.getElementById('marquee-text')
+  const el2 = document.getElementById('marquee-text-2')
+  if (el1) el1.textContent = text
+  if (el2) el2.textContent = text
+}
+
 /* ─── Init ──────────────────────────────────────────────── */
+if (typeof PROMO_TEXT !== 'undefined' && PROMO_TEXT) setAnnouncementText(PROMO_TEXT)
 loadBanner()
 loadProducts()
