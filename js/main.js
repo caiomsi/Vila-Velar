@@ -18,6 +18,8 @@ let cart        = []
 /* ─── DOM refs ──────────────────────────────────────────── */
 const grid        = document.getElementById('products-grid')
 const countEl     = document.getElementById('section-count')
+const destaquesSection = document.getElementById('destaques')
+const destaquesGrid    = document.getElementById('destaques-grid')
 const cartDrawer  = document.getElementById('cart-drawer')
 const cartOverlay = document.getElementById('cart-overlay')
 const cartItems   = document.getElementById('cart-items')
@@ -214,12 +216,16 @@ function renderProducts() {
   }
 
   grid.innerHTML = list.map((p, i) => productCardHTML(p, i)).join('')
+  wireCardEvents(grid)
+  renderDestaques()
+}
 
-  grid.querySelectorAll('.size-pill').forEach(pill => {
+function wireCardEvents(container) {
+  container.querySelectorAll('.size-pill').forEach(pill => {
     pill.addEventListener('click', () => selectSize(pill))
   })
 
-  grid.querySelectorAll('.add-btn').forEach(btn => {
+  container.querySelectorAll('.add-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id   = btn.dataset.id
       const card = btn.closest('.product-card')
@@ -234,6 +240,21 @@ function renderProducts() {
       }, 1600)
     })
   })
+}
+
+/* ─── Destaques (spotlight) ─────────────────────────────── */
+function renderDestaques() {
+  if (!destaquesGrid) return
+  const featured = allProducts.filter(p => p.featured).slice(0, 3)
+
+  if (!featured.length) {
+    destaquesSection.style.display = 'none'
+    return
+  }
+
+  destaquesSection.style.display = 'block'
+  destaquesGrid.innerHTML = featured.map((p, i) => productCardHTML(p, i)).join('')
+  wireCardEvents(destaquesGrid)
 }
 
 function productCardHTML(p, idx = 0) {
