@@ -64,10 +64,10 @@
 */
 
 // URL da aba de produtos (publicada como CSV)
-const SHEET_CSV_URL = 'COLE_AQUI_A_URL_DA_ABA_PRODUTOS'
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Y_D5i4fSl2aMZhw0FVrQTu4ddrnHL9SXKc7DXPNEgsQ/export?format=csv&gid=750433431'
 
 // URL da aba de banner (publicada como CSV)
-const BANNER_CSV_URL = 'COLE_AQUI_A_URL_DA_ABA_BANNER'
+const BANNER_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Y_D5i4fSl2aMZhw0FVrQTu4ddrnHL9SXKc7DXPNEgsQ/export?format=csv&gid=1206966111'
 
 // WhatsApp do lojista (código do país + número, sem espaços)
 const WHATSAPP_NUMBER = '5534991458213'
