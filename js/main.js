@@ -100,9 +100,27 @@ function openProductModal(id) {
   if (!p) return
   productModalBody.innerHTML = productModalHTML(p)
   wireCardEvents(productModalBody)
+  wireGallery(productModalBody)
   productModal.classList.add('open')
   productOverlay.classList.add('open')
   document.body.style.overflow = 'hidden'
+}
+
+function wireGallery(container) {
+  const imgs = container.querySelectorAll('.product-modal-gallery-img')
+  if (imgs.length < 2) return
+  const dots = container.querySelectorAll('.modal-gallery-dot')
+  let idx = 0
+
+  function show(i) {
+    idx = (i + imgs.length) % imgs.length
+    imgs.forEach((img, j) => img.classList.toggle('active', j === idx))
+    dots.forEach((d, j) => d.classList.toggle('active', j === idx))
+  }
+
+  container.querySelector('.modal-gallery-prev').addEventListener('click', () => show(idx - 1))
+  container.querySelector('.modal-gallery-next').addEventListener('click', () => show(idx + 1))
+  dots.forEach(d => d.addEventListener('click', () => show(+d.dataset.idx)))
 }
 
 function closeProductModal() {
@@ -182,13 +200,17 @@ async function loadProducts() {
       const raw = {}
       headers.forEach((h, j) => raw[h] = (row[j] || '').trim())
 
+      const images = (raw.imagem || raw.image || raw.foto || raw.photo || '')
+        .split(',').map(s => s.trim()).filter(Boolean)
+
       return {
         id:          `row_${i}`,
         name:        raw.nome   || raw.name        || '',
         category:    (raw.categoria || raw.category || '').toLowerCase(),
         price:       parseFloat((raw.preco || raw.price || '0').replace(',', '.')),
         description: raw.descricao || raw.description || '',
-        image:       raw.imagem || raw.image || raw.foto || raw.photo || '',
+        images,
+        image:       images[0] || '',
         sizes:       parseSizes(raw.tamanhos || raw.sizes || ''),
         active:      (raw.ativo || raw.active || 'TRUE').toUpperCase() !== 'FALSE',
         featured:    (raw.destaque || raw.featured || 'FALSE').toUpperCase() === 'TRUE',
@@ -304,6 +326,32 @@ function productImageHTML(p) {
        </div>`
 }
 
+function productGalleryHTML(p) {
+  if (p.images.length <= 1) return productImageHTML(p)
+
+  const slides = p.images.map((url, i) =>
+    `<img src="${url}" alt="${p.name}" class="product-modal-gallery-img ${i === 0 ? 'active' : ''}" loading="lazy" />`
+  ).join('')
+
+  const dots = p.images.map((_, i) =>
+    `<button class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1}"></button>`
+  ).join('')
+
+  return `
+    ${slides}
+    <button class="modal-gallery-arrow modal-gallery-prev" aria-label="Foto anterior">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <button class="modal-gallery-arrow modal-gallery-next" aria-label="Próxima foto">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <div class="modal-gallery-dots">${dots}</div>`
+}
+
 function sizePillsHTML(p) {
   const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
   return sizeEntries.map(([size, stock]) =>
@@ -354,7 +402,7 @@ function productModalHTML(p) {
   return `
     <div class="product-modal-card" data-product-card data-id="${p.id}">
       <div class="product-modal-img-wrap">
-        ${productImageHTML(p)}
+        ${productGalleryHTML(p)}
         ${badge}
       </div>
       <div class="product-modal-info">

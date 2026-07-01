@@ -19,6 +19,10 @@
     categoria:  camisetas  (opções: camisetas, polos, camisas, calcas, bermudas, moletons, jaquetas)
     preco:      89.90
     imagem:     https://... (URL pública da foto do produto)
+                Para mais de uma foto, cole os links separados por vírgula:
+                https://...foto1.jpg,https://...foto2.jpg,https://...foto3.jpg
+                A primeira foto aparece na vitrine; todas aparecem no
+                pop-up de detalhes do produto (clique na peça no site).
     tamanhos:   P:5,M:10,G:8,GG:3   (tamanho:quantidade, separados por vírgula)
     ativo:      TRUE   (TRUE = aparece na loja | FALSE = oculto)
     destaque:   FALSE  (TRUE = badge "Destaque" + aparece primeiro)

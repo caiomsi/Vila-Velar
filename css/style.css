@@ -929,6 +929,50 @@ ul { list-style: none; }
 }
 .product-modal-info .size-pills { margin-bottom: 22px; }
 
+/* Modal image gallery (multiple photos) */
+.product-modal-gallery-img { opacity: 0; transition: opacity .3s; }
+.product-modal-gallery-img.active { opacity: 1; }
+
+.modal-gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.85);
+  border: none;
+  color: var(--black);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background .2s;
+}
+.modal-gallery-arrow:hover { background: var(--yellow); }
+.modal-gallery-arrow svg { width: 16px; height: 16px; }
+.modal-gallery-prev { left: 14px; }
+.modal-gallery-next { right: 14px; }
+
+.modal-gallery-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.modal-gallery-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.6);
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s;
+}
+.modal-gallery-dot.active { background: var(--yellow); }
+
 /* ─── Sobre ───────────────────────────────────────────────── */
 #sobre {
   background: var(--black);
