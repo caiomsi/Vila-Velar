@@ -28,6 +28,9 @@ const cartTotal   = document.getElementById('cart-total')
 const cartCount    = document.getElementById('cart-count')
 const cartBtnPrice = document.getElementById('cart-btn-price')
 const waBtnEl      = document.getElementById('whatsapp-btn')
+const productOverlay  = document.getElementById('product-overlay')
+const productModal    = document.getElementById('product-modal')
+const productModalBody = document.getElementById('product-modal-body')
 
 /* ─── Banner carousel ───────────────────────────────────── */
 ;(function () {
@@ -85,6 +88,27 @@ function closeCart() {
   cartDrawer.classList.remove('open')
   cartOverlay.classList.remove('open')
   document.body.style.overflow = ''
+}
+
+/* ─── Product detail modal ───────────────────────────────── */
+document.getElementById('product-modal-close').addEventListener('click', closeProductModal)
+productOverlay.addEventListener('click', closeProductModal)
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProductModal() })
+
+function openProductModal(id) {
+  const p = allProducts.find(item => item.id === id)
+  if (!p) return
+  productModalBody.innerHTML = productModalHTML(p)
+  wireCardEvents(productModalBody)
+  productModal.classList.add('open')
+  productOverlay.classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeProductModal() {
+  productModal.classList.remove('open')
+  productOverlay.classList.remove('open')
+  if (!cartDrawer.classList.contains('open')) document.body.style.overflow = ''
 }
 
 /* ─── CSV parser ─────────────────────────────────────────── */
@@ -217,6 +241,7 @@ function renderProducts() {
 
   grid.innerHTML = list.map((p, i) => productCardHTML(p, i)).join('')
   wireCardEvents(grid)
+  wireCardOpenModal(grid)
   renderDestaques()
 }
 
@@ -228,7 +253,7 @@ function wireCardEvents(container) {
   container.querySelectorAll('.add-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id   = btn.dataset.id
-      const card = btn.closest('.product-card')
+      const card = btn.closest('[data-product-card]')
       const sel  = card.querySelector('.size-pill.selected')
       if (!sel) { flashNoSize(card); return }
       addToCart(id, sel.dataset.size, sel.dataset.stock)
@@ -238,6 +263,15 @@ function wireCardEvents(container) {
         btn.textContent = 'Adicionar ao Carrinho'
         btn.classList.remove('added')
       }, 1600)
+    })
+  })
+}
+
+function wireCardOpenModal(container) {
+  container.querySelectorAll('[data-product-card]').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.size-pill') || e.target.closest('.add-btn')) return
+      openProductModal(card.dataset.id)
     })
   })
 }
@@ -255,15 +289,11 @@ function renderDestaques() {
   destaquesSection.style.display = 'block'
   destaquesGrid.innerHTML = featured.map((p, i) => productCardHTML(p, i)).join('')
   wireCardEvents(destaquesGrid)
+  wireCardOpenModal(destaquesGrid)
 }
 
-function productCardHTML(p, idx = 0) {
-  const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
-  const totalStock  = Object.values(p.sizes).reduce((s, v) => s + v, 0)
-  const cat = CATEGORIES[p.category] || p.category
-  const num = String(idx + 1).padStart(2, '0')
-
-  const imgHTML = p.image
+function productImageHTML(p) {
+  return p.image
     ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
     : `<div class="product-placeholder">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -272,23 +302,32 @@ function productCardHTML(p, idx = 0) {
          </svg>
          <span>Vila Velar</span>
        </div>`
+}
 
-  const badge = totalStock === 0
-    ? '<span class="badge-esgotado">Esgotado</span>'
-    : p.featured ? '<span class="badge-novo">Destaque</span>' : ''
-
-  const sizePills = sizeEntries.map(([size, stock]) =>
+function sizePillsHTML(p) {
+  const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
+  return sizeEntries.map(([size, stock]) =>
     `<button class="size-pill ${stock === 0 ? 'out' : ''}"
        data-size="${size}" data-stock="${stock}"
        ${stock === 0 ? 'disabled' : ''}
        title="${stock === 0 ? 'Esgotado' : stock + ' em estoque'}"
      >${size}</button>`
   ).join('')
+}
+
+function productCardHTML(p, idx = 0) {
+  const totalStock = Object.values(p.sizes).reduce((s, v) => s + v, 0)
+  const cat = CATEGORIES[p.category] || p.category
+  const num = String(idx + 1).padStart(2, '0')
+
+  const badge = totalStock === 0
+    ? '<span class="badge-esgotado">Esgotado</span>'
+    : p.featured ? '<span class="badge-novo">Destaque</span>' : ''
 
   return `
-    <div class="product-card" data-id="${p.id}">
+    <div class="product-card" data-product-card data-id="${p.id}">
       <div class="product-img-wrap">
-        ${imgHTML}
+        ${productImageHTML(p)}
         <span class="product-num" aria-hidden="true">${num}</span>
         ${badge}
       </div>
@@ -296,7 +335,34 @@ function productCardHTML(p, idx = 0) {
         <p class="product-cat">${cat}</p>
         <h3 class="product-name">${p.name}</h3>
         <p class="product-price">${formatPrice(p.price)}</p>
-        <div class="size-pills">${sizePills}</div>
+        <div class="size-pills">${sizePillsHTML(p)}</div>
+        <button class="add-btn" data-id="${p.id}" ${totalStock === 0 ? 'disabled' : ''}>
+          ${totalStock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
+        </button>
+      </div>
+    </div>`
+}
+
+function productModalHTML(p) {
+  const totalStock = Object.values(p.sizes).reduce((s, v) => s + v, 0)
+  const cat = CATEGORIES[p.category] || p.category
+
+  const badge = totalStock === 0
+    ? '<span class="badge-esgotado">Esgotado</span>'
+    : p.featured ? '<span class="badge-novo">Destaque</span>' : ''
+
+  return `
+    <div class="product-modal-card" data-product-card data-id="${p.id}">
+      <div class="product-modal-img-wrap">
+        ${productImageHTML(p)}
+        ${badge}
+      </div>
+      <div class="product-modal-info">
+        <p class="product-cat">${cat}</p>
+        <h2 class="product-modal-name">${p.name}</h2>
+        <p class="product-modal-price">${formatPrice(p.price)}</p>
+        ${p.description ? `<p class="product-modal-desc">${p.description}</p>` : ''}
+        <div class="size-pills">${sizePillsHTML(p)}</div>
         <button class="add-btn" data-id="${p.id}" ${totalStock === 0 ? 'disabled' : ''}>
           ${totalStock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
         </button>
@@ -305,7 +371,7 @@ function productCardHTML(p, idx = 0) {
 }
 
 function selectSize(pill) {
-  pill.closest('.product-card').querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'))
+  pill.closest('[data-product-card]').querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'))
   pill.classList.add('selected')
 }
 

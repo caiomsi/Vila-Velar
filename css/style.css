@@ -227,18 +227,7 @@ ul { list-style: none; }
 .hero-brand-bg {
   position: absolute;
   inset: 0;
-}
-.hero-logo-bg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: brightness(.18) saturate(.2);
-}
-.hero-brand-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, rgba(0,0,0,.85) 40%, rgba(245,197,24,.06) 100%);
+  background: linear-gradient(105deg, var(--black) 30%, var(--yellow) 100%);
 }
 
 .hero-brand-content {
@@ -845,6 +834,101 @@ ul { list-style: none; }
 .cart-whatsapp:hover { background: #1ea855; }
 .cart-whatsapp svg { width: 21px; height: 21px; flex-shrink: 0; }
 
+/* ─── Product card (clickable) ───────────────────────────── */
+.product-card { cursor: pointer; }
+
+/* ─── Product detail modal ───────────────────────────────── */
+#product-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 1099;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s, visibility .3s;
+}
+#product-overlay.open { opacity: 1; visibility: visible; }
+
+#product-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -46%);
+  width: min(880px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--white);
+  z-index: 1100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s, transform .3s, visibility .3s;
+}
+#product-modal.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+}
+
+.product-modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  z-index: 2;
+  width: 36px; height: 36px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  color: var(--black);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, border-color .2s;
+}
+.product-modal-close:hover { background: var(--yellow); border-color: var(--yellow); }
+.product-modal-close svg { width: 18px; height: 18px; }
+
+.product-modal-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  cursor: default;
+}
+
+.product-modal-img-wrap {
+  position: relative;
+  background: var(--gray-100);
+  min-height: 460px;
+}
+.product-modal-img-wrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.product-modal-info {
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+}
+.product-modal-name {
+  font-family: var(--font-display);
+  font-size: 36px;
+  letter-spacing: .02em;
+  line-height: 1.05;
+  margin: 8px 0 14px;
+}
+.product-modal-price {
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--black);
+  margin-bottom: 22px;
+}
+.product-modal-desc {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--gray-600);
+  margin-bottom: 26px;
+}
+.product-modal-info .size-pills { margin-bottom: 22px; }
+
 /* ─── Sobre ───────────────────────────────────────────────── */
 #sobre {
   background: var(--black);
@@ -1026,6 +1110,13 @@ footer {
   .sobre-visual-mark { font-size: 100px; }
 
   #cart-drawer { width: 100vw; }
+
+  #product-modal { width: 94vw; max-height: 92vh; }
+  .product-modal-card { grid-template-columns: 1fr; }
+  .product-modal-img-wrap { min-height: 320px; }
+  .product-modal-info { padding: 30px 22px; }
+  .product-modal-name { font-size: 28px; }
+  .product-modal-price { font-size: 24px; }
 
   footer { padding: 40px 20px 24px; }
   .footer-top { flex-direction: column; align-items: flex-start; gap: 20px; }

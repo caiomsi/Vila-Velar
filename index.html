@@ -57,10 +57,7 @@
 
         <!-- Slide 1: Brand editorial -->
         <div class="hero-slide hero-slide-brand">
-          <div class="hero-brand-bg">
-            <img src="images/logo.jpg" alt="" class="hero-logo-bg" />
-            <div class="hero-brand-overlay"></div>
-          </div>
+          <div class="hero-brand-bg"></div>
           <div class="hero-brand-content">
             <p class="hero-brand-eyebrow">Est. 2024 &mdash; Uberlândia, MG</p>
             <h1 class="hero-brand-title">VILA<br>VELAR</h1>
@@ -230,6 +227,17 @@
       </a>
     </div>
   </aside>
+
+  <!-- ─── Product detail modal ───────────────────────────── -->
+  <div id="product-overlay"></div>
+  <div id="product-modal" role="dialog" aria-label="Detalhes do produto">
+    <button class="product-modal-close" id="product-modal-close" aria-label="Fechar">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <div class="product-modal-body" id="product-modal-body"></div>
+  </div>
 
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
