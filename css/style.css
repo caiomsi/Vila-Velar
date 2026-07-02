@@ -485,7 +485,7 @@ ul { list-style: none; }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 28px;
 }
 
@@ -1114,8 +1114,8 @@ footer {
 }
 
 /* ─── Responsive ──────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .products-grid { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 1400px) {
+  #produtos, .destaques-inner { max-width: 1600px; }
 }
 
 @media (max-width: 768px) {
@@ -1174,6 +1174,16 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .products-grid { grid-template-columns: 1fr; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .hero-brand-content { padding: 0 6%; }
+
+  .product-info { padding: 12px 14px 16px; }
+  .product-cat { font-size: 8px; margin-bottom: 4px; }
+  .product-name { font-size: 15px; margin-bottom: 8px; }
+  .product-price { font-size: 17px; margin-bottom: 10px; }
+  .product-num { font-size: 34px; top: 4px; left: 8px; }
+  .badge-esgotado, .badge-novo { font-size: 7px; padding: 3px 6px; top: 8px; right: 8px; }
+  .size-pills { gap: 4px; margin-bottom: 10px; }
+  .size-pill { padding: 4px 7px; font-size: 9px; }
+  .add-btn { padding: 9px; font-size: 11px; letter-spacing: .06em; }
 }
