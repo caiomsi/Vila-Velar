@@ -72,6 +72,33 @@ document.getElementById('nav-toggle').addEventListener('click', () => {
   document.getElementById('nav-links').classList.toggle('open')
 })
 
+/* ─── Body scroll lock ───────────────────────────────────────
+   overflow:hidden alone doesn't stop background touch-scroll on
+   iOS Safari, so pin the body in place instead; a counter lets
+   cart + product modal be open together without unlocking early. */
+let scrollLockCount = 0
+let savedScrollY = 0
+
+function lockBodyScroll() {
+  if (scrollLockCount === 0) {
+    savedScrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${savedScrollY}px`
+    document.body.style.width = '100%'
+  }
+  scrollLockCount++
+}
+
+function unlockBodyScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1)
+  if (scrollLockCount === 0) {
+    document.body.style.position = ''
+    document.body.style.top = ''
+    document.body.style.width = ''
+    window.scrollTo(0, savedScrollY)
+  }
+}
+
 /* ─── Cart open/close ───────────────────────────────────── */
 document.getElementById('cart-btn').addEventListener('click', openCart)
 document.getElementById('cart-close').addEventListener('click', closeCart)
@@ -81,13 +108,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCart() 
 function openCart() {
   cartDrawer.classList.add('open')
   cartOverlay.classList.add('open')
-  document.body.style.overflow = 'hidden'
+  lockBodyScroll()
   renderCart()
 }
 function closeCart() {
   cartDrawer.classList.remove('open')
   cartOverlay.classList.remove('open')
-  document.body.style.overflow = ''
+  unlockBodyScroll()
 }
 
 /* ─── Product detail modal ───────────────────────────────── */
@@ -103,7 +130,7 @@ function openProductModal(id) {
   wireGallery(productModalBody)
   productModal.classList.add('open')
   productOverlay.classList.add('open')
-  document.body.style.overflow = 'hidden'
+  lockBodyScroll()
 }
 
 function wireGallery(container) {
@@ -126,7 +153,7 @@ function wireGallery(container) {
 function closeProductModal() {
   productModal.classList.remove('open')
   productOverlay.classList.remove('open')
-  if (!cartDrawer.classList.contains('open')) document.body.style.overflow = ''
+  unlockBodyScroll()
 }
 
 /* ─── Escape de HTML (dados vêm da planilha) ─────────────── */
