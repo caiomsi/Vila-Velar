@@ -61,9 +61,8 @@
     2. Clique com botão direito → "Compartilhar"
     3. Altere para "Qualquer pessoa com o link pode ver"
     4. Copie o link (ex: https://drive.google.com/file/d/ID/view)
-    5. Transforme em link direto:
-       https://drive.google.com/uc?export=view&id=ID
-    6. Use esse link direto na planilha
+    5. Cole o link na planilha do jeito que ele vem —
+       o site converte automaticamente para o formato de exibição
   ════════════════════════════════════════════════════════════
 */
 

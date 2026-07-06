@@ -129,6 +129,30 @@ function closeProductModal() {
   if (!cartDrawer.classList.contains('open')) document.body.style.overflow = ''
 }
 
+/* ─── Escape de HTML (dados vêm da planilha) ─────────────── */
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/* ─── Normaliza links do Google Drive ────────────────────────
+   Aceita qualquer formato de link do Drive colado na planilha:
+     https://drive.google.com/file/d/ID/view?usp=sharing
+     https://drive.google.com/open?id=ID
+     https://drive.google.com/uc?export=view&id=ID
+   e converte para o formato estável de exibição direta:
+     https://lh3.googleusercontent.com/d/ID                    */
+function normalizeImageURL(url) {
+  if (!url) return url
+  const m =
+    url.match(/drive\.google\.com\/file\/d\/([\w-]+)/) ||
+    url.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/)
+  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url
+}
+
 /* ─── CSV parser ─────────────────────────────────────────── */
 function parseCSV(text) {
   const rows = []
@@ -201,7 +225,7 @@ async function loadProducts() {
       headers.forEach((h, j) => raw[h] = (row[j] || '').trim())
 
       const images = (raw.imagem || raw.image || raw.foto || raw.photo || '')
-        .split(',').map(s => s.trim()).filter(Boolean)
+        .split(',').map(s => normalizeImageURL(s.trim())).filter(Boolean)
 
       return {
         id:          `row_${i}`,
@@ -219,6 +243,7 @@ async function loadProducts() {
     .filter(p => p.active && p.name)
     .sort((a, b) => b.featured - a.featured)
 
+    restoreCart()
     renderProducts()
   } catch (e) {
     grid.innerHTML = `
@@ -316,7 +341,7 @@ function renderDestaques() {
 
 function productImageHTML(p) {
   return p.image
-    ? `<img src="${p.image}" alt="${p.name}" loading="lazy" />`
+    ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" />`
     : `<div class="product-placeholder">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -330,7 +355,7 @@ function productGalleryHTML(p) {
   if (p.images.length <= 1) return productImageHTML(p)
 
   const slides = p.images.map((url, i) =>
-    `<img src="${url}" alt="${p.name}" class="product-modal-gallery-img ${i === 0 ? 'active' : ''}" loading="lazy" />`
+    `<img src="${esc(url)}" alt="${esc(p.name)}" class="product-modal-gallery-img ${i === 0 ? 'active' : ''}" loading="lazy" />`
   ).join('')
 
   const dots = p.images.map((_, i) =>
@@ -356,7 +381,7 @@ function sizePillsHTML(p) {
   const sizeEntries = Object.entries(p.sizes).sort((a, b) => sizeOrder(a[0]) - sizeOrder(b[0]))
   return sizeEntries.map(([size, stock]) =>
     `<button class="size-pill ${stock === 0 ? 'out' : ''}"
-       data-size="${size}" data-stock="${stock}"
+       data-size="${esc(size)}" data-stock="${stock}"
        ${stock === 0 ? 'disabled' : ''}
        title="${stock === 0 ? 'Esgotado' : stock + ' em estoque'}"
      >${size}</button>`
@@ -380,8 +405,8 @@ function productCardHTML(p, idx = 0) {
         ${badge}
       </div>
       <div class="product-info">
-        <p class="product-cat">${cat}</p>
-        <h3 class="product-name">${p.name}</h3>
+        <p class="product-cat">${esc(cat)}</p>
+        <h3 class="product-name">${esc(p.name)}</h3>
         <p class="product-price">${formatPrice(p.price)}</p>
         <div class="size-pills">${sizePillsHTML(p)}</div>
         <button class="add-btn" data-id="${p.id}" ${totalStock === 0 ? 'disabled' : ''}>
@@ -406,10 +431,10 @@ function productModalHTML(p) {
         ${badge}
       </div>
       <div class="product-modal-info">
-        <p class="product-cat">${cat}</p>
-        <h2 class="product-modal-name">${p.name}</h2>
+        <p class="product-cat">${esc(cat)}</p>
+        <h2 class="product-modal-name">${esc(p.name)}</h2>
         <p class="product-modal-price">${formatPrice(p.price)}</p>
-        ${p.description ? `<p class="product-modal-desc">${p.description}</p>` : ''}
+        ${p.description ? `<p class="product-modal-desc">${esc(p.description)}</p>` : ''}
         <div class="size-pills">${sizePillsHTML(p)}</div>
         <button class="add-btn" data-id="${p.id}" ${totalStock === 0 ? 'disabled' : ''}>
           ${totalStock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
@@ -428,6 +453,43 @@ function flashNoSize(card) {
   pills.style.outline = '2px solid #e53e3e'
   pills.style.borderRadius = '4px'
   setTimeout(() => { pills.style.outline = ''; pills.style.borderRadius = '' }, 800)
+}
+
+/* ─── Cart persistence (localStorage) ───────────────────── */
+const CART_KEY = 'vv_cart'
+
+function saveCart() {
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify(
+      cart.map(i => ({ name: i.product.name, size: i.size, qty: i.qty }))
+    ))
+  } catch (e) { /* modo privado / storage cheio — segue sem persistir */ }
+}
+
+/* Reconstrói o carrinho salvo depois que os produtos carregam.
+   Casa por nome (o id é o índice da linha e muda se a planilha
+   for reordenada) e re-valida o estoque atual. */
+function restoreCart() {
+  let saved
+  try { saved = JSON.parse(localStorage.getItem(CART_KEY)) } catch (e) { return }
+  if (!Array.isArray(saved) || !saved.length) return
+
+  cart = []
+  saved.forEach(s => {
+    const product = allProducts.find(p => p.name === s.name)
+    if (!product) return
+    const stock = product.sizes[s.size] || 0
+    if (stock === 0) return
+    cart.push({
+      key: `${product.id}__${s.size}`,
+      productId: product.id,
+      size: s.size,
+      qty: Math.min(s.qty, stock),
+      stock,
+      product,
+    })
+  })
+  updateCartCount()
 }
 
 /* ─── Cart logic ────────────────────────────────────────── */
@@ -469,6 +531,7 @@ function updateCartCount() {
   cartCount.textContent = total
   cartCount.classList.toggle('visible', total > 0)
   if (cartBtnPrice) cartBtnPrice.textContent = formatPrice(subtotal)
+  saveCart()
 }
 
 /* ─── Render cart ───────────────────────────────────────── */
@@ -488,7 +551,7 @@ function renderCart() {
 
   cartItems.innerHTML = cart.map(item => {
     const img = item.product.image
-      ? `<img class="cart-item-img" src="${item.product.image}" alt="${item.product.name}">`
+      ? `<img class="cart-item-img" src="${esc(item.product.image)}" alt="${esc(item.product.name)}">`
       : `<div class="cart-item-img-placeholder">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -499,8 +562,8 @@ function renderCart() {
       <div class="cart-item" data-key="${item.key}">
         ${img}
         <div class="cart-item-info">
-          <p class="cart-item-name">${item.product.name}</p>
-          <p class="cart-item-size">Tamanho: ${item.size}</p>
+          <p class="cart-item-name">${esc(item.product.name)}</p>
+          <p class="cart-item-size">Tamanho: ${esc(item.size)}</p>
           <div class="cart-item-row">
             <span class="cart-item-price">${formatPrice(item.product.price * item.qty)}</span>
             <div style="display:flex;align-items:center">
@@ -588,7 +651,7 @@ function applyBannerImage(slideId, url) {
   if (!url) return
   const slide = document.getElementById(slideId)
   if (!slide) return
-  slide.innerHTML = `<img src="${url}" alt="Banner" />`
+  slide.innerHTML = `<img src="${esc(normalizeImageURL(url))}" alt="Banner" />`
 }
 
 /* ─── Announcement bar ──────────────────────────────────── */
