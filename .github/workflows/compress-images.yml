@@ -31,5 +31,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: comprimir imagens [skip ci]"
-          file_pattern: "*.jpg *.jpeg *.png"
-          add_options: "--ignore-unmatch"
+          file_pattern: "*.jpg *.png"
