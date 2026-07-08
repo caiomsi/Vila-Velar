@@ -1,0 +1,29 @@
+name: Validar site
+
+# Verifica links quebrados e caminhos de imagens/assets a cada push.
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checar links e caminhos locais
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Verifica âncoras/assets internos; ignora o domínio próprio, o
+          # WhatsApp e os links de redes sociais/busca.
+          args: >-
+            --no-progress
+            --include-fragments
+            --exclude-path images
+            --exclude "vilavelar\.com\.br"
+            --exclude "wa\.me|facebook\.com|instagram\.com|google\.com"
+            index.html
+          fail: true
