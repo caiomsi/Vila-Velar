@@ -1,0 +1,34 @@
+name: Comprimir imagens
+
+# Comprime automaticamente imagens jpg/png novas ou alteradas a cada push, para
+# que fotos nunca precisem de otimização manual antes do commit. Não afeta as
+# fotos de produto/banner, que ficam no Google Drive/Sheets, fora deste repo.
+on:
+  push:
+    branches: [master]
+    paths:
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.png'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprimir imagens
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
+
+      - name: Commit das imagens comprimidas
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: comprimir imagens [skip ci]"
+          file_pattern: "*.jpg *.jpeg *.png"
