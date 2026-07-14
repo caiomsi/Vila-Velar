@@ -34,6 +34,6 @@ the data model — it's the client-facing setup doc.
 ## Checkout — WhatsApp, real number
 
 `WHATSAPP_NUMBER` in `js/config.js` is already a **real, live number**
-(`5534991458213`) — unlike NEXO-Studio/Corretora-InHouse, this is not a placeholder.
+(`5534999095679`) — unlike NEXO-Studio/Corretora-InHouse, this is not a placeholder.
 Cart is slide-in, `localStorage`-persisted; checkout builds a pre-filled `wa.me`
 message. No MSI-Forms integration — WhatsApp is the entire lead/order flow here.

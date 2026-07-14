@@ -73,7 +73,7 @@ const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Y_D5i4fSl2aMZhw0F
 const BANNER_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Y_D5i4fSl2aMZhw0FVrQTu4ddrnHL9SXKc7DXPNEgsQ/export?format=csv&gid=1206966111'
 
 // WhatsApp do lojista (código do país + número, sem espaços)
-const WHATSAPP_NUMBER = '5534991458213'
+const WHATSAPP_NUMBER = '5534999095679'
 
 // Texto padrão da faixa de promoção no topo
 // (substitua aqui ou controle pela planilha com a chave promo_texto)
