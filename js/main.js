@@ -251,7 +251,11 @@ async function loadProducts() {
       const raw = {}
       headers.forEach((h, j) => raw[h] = (row[j] || '').trim())
 
-      const images = (raw.imagem || raw.image || raw.foto || raw.photo || '')
+      const imageCols = [raw.imagem_1, raw.imagem_2, raw.imagem_3].filter(Boolean)
+      const imageSrc  = imageCols.length
+        ? imageCols.join(',')
+        : (raw.imagem || raw.image || raw.foto || raw.photo || '')
+      const images = imageSrc
         .split(',').map(s => normalizeImageURL(s.trim())).filter(Boolean)
 
       return {

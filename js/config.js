@@ -11,18 +11,18 @@
   Crie uma planilha no Google Sheets. Na primeira aba (ex: "Produtos"),
   coloque estes cabeçalhos na linha 1:
 
-    nome | categoria | preco | imagem | tamanhos | ativo | destaque | descricao
+    nome | categoria | preco | imagem_1 | imagem_2 | imagem_3 | tamanhos | ativo | destaque | descricao
 
   Preencha os produtos a partir da linha 2:
 
     nome:       Camiseta Essencial
-    categoria:  camisetas  (opções: camisetas, polos, camisas, calcas, bermudas, moletons, jaquetas)
+    categoria:  camisetas  (opções: camisetas, camisas, sweaters, calcas, bermudas, moletons, jaquetas, bones, outros)
     preco:      89.90
-    imagem:     https://... (URL pública da foto do produto)
-                Para mais de uma foto, cole os links separados por vírgula:
-                https://...foto1.jpg,https://...foto2.jpg,https://...foto3.jpg
-                A primeira foto aparece na vitrine; todas aparecem no
-                pop-up de detalhes do produto (clique na peça no site).
+    imagem_1:   https://... (URL pública da foto principal — aparece na vitrine)
+    imagem_2:   https://... (2ª foto — opcional, deixe em branco se não tiver)
+    imagem_3:   https://... (3ª foto — opcional, deixe em branco se não tiver)
+                Todas as fotos preenchidas aparecem no pop-up de detalhes do
+                produto (clique na peça no site) como um carrossel.
     tamanhos:   P:5,M:10,G:8,GG:3   (tamanho:quantidade, separados por vírgula)
     ativo:      TRUE   (TRUE = aparece na loja | FALSE = oculto)
     destaque:   FALSE  (TRUE = badge "Destaque" + aparece primeiro)
