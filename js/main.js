@@ -165,19 +165,34 @@ function esc(str) {
     .replace(/"/g, '&quot;')
 }
 
+/* Imagem de reserva caso um link da planilha falhe ao carregar —
+   evita o ícone de "imagem quebrada"; mostra um placeholder da marca. */
+const FALLBACK_IMG = 'https://placehold.co/600x800/0A0A0A/F5C518?text=Vila+Velar'
+const IMG_FALLBACK = `onerror="this.onerror=null;this.src='${FALLBACK_IMG}'"`
+
 /* ─── Normaliza links do Google Drive ────────────────────────
    Aceita qualquer formato de link do Drive colado na planilha:
      https://drive.google.com/file/d/ID/view?usp=sharing
      https://drive.google.com/open?id=ID
      https://drive.google.com/uc?export=view&id=ID
-   e converte para o formato estável de exibição direta:
-     https://lh3.googleusercontent.com/d/ID                    */
+     https://drive.usercontent.google.com/download?id=ID&export=view
+   e converte para o formato estável de exibição direta (endpoint de
+   miniatura do Drive, o mais confiável para exibir em <img>):
+     https://drive.google.com/thumbnail?id=ID&sz=w1200            */
 function normalizeImageURL(url) {
   if (!url) return url
+  url = url.trim()
+  // Deixa links que não são do Google Drive intactos (placehold.co, CDNs, etc.)
+  if (!/google\.com/.test(url)) return url
+  // Já está num formato do Google que carrega direto em <img>? mantém.
+  if (/lh3\.googleusercontent\.com\/d\//.test(url) || /\/thumbnail\?/.test(url)) return url
+  // Extrai o ID do arquivo de QUALQUER formato de link do Drive
+  // (/file/d/ID, ?id=ID, /d/ID — cobre share, open, uc, download e usercontent)
   const m =
-    url.match(/drive\.google\.com\/file\/d\/([\w-]+)/) ||
-    url.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/)
-  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url
+    url.match(/\/file\/d\/([\w-]{10,})/) ||
+    url.match(/[?&]id=([\w-]{10,})/)     ||
+    url.match(/\/d\/([\w-]{10,})/)
+  return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200` : url
 }
 
 /* ─── CSV parser ─────────────────────────────────────────── */
@@ -372,7 +387,7 @@ function renderDestaques() {
 
 function productImageHTML(p) {
   return p.image
-    ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" />`
+    ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" ${IMG_FALLBACK} />`
     : `<div class="product-placeholder">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -386,7 +401,7 @@ function productGalleryHTML(p) {
   if (p.images.length <= 1) return productImageHTML(p)
 
   const slides = p.images.map((url, i) =>
-    `<img src="${esc(url)}" alt="${esc(p.name)}" class="product-modal-gallery-img ${i === 0 ? 'active' : ''}" loading="lazy" />`
+    `<img src="${esc(url)}" alt="${esc(p.name)}" class="product-modal-gallery-img ${i === 0 ? 'active' : ''}" loading="lazy" ${IMG_FALLBACK} />`
   ).join('')
 
   const dots = p.images.map((_, i) =>
@@ -582,7 +597,7 @@ function renderCart() {
 
   cartItems.innerHTML = cart.map(item => {
     const img = item.product.image
-      ? `<img class="cart-item-img" src="${esc(item.product.image)}" alt="${esc(item.product.name)}">`
+      ? `<img class="cart-item-img" src="${esc(item.product.image)}" alt="${esc(item.product.name)}" ${IMG_FALLBACK}>`
       : `<div class="cart-item-img-placeholder">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -682,7 +697,7 @@ function applyBannerImage(slideId, url) {
   if (!url) return
   const slide = document.getElementById(slideId)
   if (!slide) return
-  slide.innerHTML = `<img src="${esc(normalizeImageURL(url))}" alt="Banner" />`
+  slide.innerHTML = `<img src="${esc(normalizeImageURL(url))}" alt="Banner" ${IMG_FALLBACK} />`
 }
 
 /* ─── Announcement bar ──────────────────────────────────── */
