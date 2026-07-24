@@ -224,6 +224,21 @@ ul { list-style: none; }
 /* Slides — Promo images (slide 1 = editorial photo, 2 & 3 = planilha) */
 .hero-slide-ph { background: #0c0c0c; justify-content: center; }
 
+/* Blurred backdrop: fills the space around a fully-visible (contain) image
+   with a zoomed, blurred copy of that same image — so the whole image always
+   shows, with no cropping and no dead letterbox bars, at every viewport. */
+.hero-slide-ph::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--hero-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(45px) brightness(.72) saturate(1.1);
+  transform: scale(1.3);
+  z-index: 0;
+}
+
 .hero-slide-placeholder {
   display: flex;
   flex-direction: column;
@@ -251,9 +266,10 @@ ul { list-style: none; }
 .hero-slide-ph > img {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;   /* whole image visible — never cropped, any viewport */
 }
 
 /* Arrows */
@@ -1066,10 +1082,6 @@ footer {
 
 @media (max-width: 768px) {
   #nav { padding: 0 20px; }
-
-  /* Fotos com texto embutido perdem legibilidade se cortadas nas
-     laterais por object-fit:cover num celular estreito */
-  .hero-slide-ph > img { object-fit: contain; }
 
   .nav-links {
     display: none;
