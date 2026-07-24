@@ -698,9 +698,6 @@ function applyBannerImage(slideId, url) {
   const slide = document.getElementById(slideId)
   if (!slide) return
   const src = normalizeImageURL(url)
-  // Blurred backdrop (see .hero-slide-ph::before) fills the space around the
-  // fully-visible image so the whole banner shows at any viewport.
-  slide.style.setProperty('--hero-bg', `url("${src}")`)
   slide.innerHTML = `<img src="${esc(src)}" alt="Banner" ${IMG_FALLBACK} />`
 }
 

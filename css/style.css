@@ -191,8 +191,6 @@ ul { list-style: none; }
 /* ─── Hero ───────────────────────────────────────────────── */
 #hero {
   margin-top: var(--top-h);
-  height: calc(80vh - var(--top-h));
-  min-height: 440px;
   background: var(--black);
   overflow: hidden;
 }
@@ -200,50 +198,32 @@ ul { list-style: none; }
 .hero-banner {
   position: relative;
   width: 100%;
-  height: 100%;
   overflow: hidden;
 }
 
 .hero-slides {
   display: flex;
   width: 300%;
-  height: 100%;
+  align-items: flex-start;   /* height follows each image, no stretching */
   transition: transform .6s cubic-bezier(.4,0,.2,1);
 }
 
 .hero-slide {
   flex: 0 0 33.333%;
-  height: 100%;
   position: relative;
-  display: flex;
-  align-items: center;
   background: var(--black);
-  overflow: hidden;
 }
 
 /* Slides — Promo images (slide 1 = editorial photo, 2 & 3 = planilha) */
-.hero-slide-ph { background: #0c0c0c; justify-content: center; }
-
-/* Blurred backdrop: fills the space around a fully-visible (contain) image
-   with a zoomed, blurred copy of that same image — so the whole image always
-   shows, with no cropping and no dead letterbox bars, at every viewport. */
-.hero-slide-ph::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: var(--hero-bg);
-  background-size: cover;
-  background-position: center;
-  filter: blur(45px) brightness(.72) saturate(1.1);
-  transform: scale(1.3);
-  z-index: 0;
-}
+.hero-slide-ph { background: #0c0c0c; }
 
 .hero-slide-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  aspect-ratio: 4 / 5;          /* fallback size when a banner slot is empty */
   color: rgba(255,255,255,.18);
   text-align: center;
   padding: 0 24px;
@@ -262,14 +242,12 @@ ul { list-style: none; }
   color: rgba(255,255,255,.1);
 }
 
-/* Image injected by JS */
+/* The banner IS the image: full width edge-to-edge, height follows the
+   image's natural proportions — nothing cropped, nothing filling the sides. */
 .hero-slide-ph > img {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;   /* whole image visible — never cropped, any viewport */
+  height: auto;
 }
 
 /* Arrows */
