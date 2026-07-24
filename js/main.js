@@ -698,9 +698,51 @@ function applyBannerImage(slideId, url) {
   const slide = document.getElementById(slideId)
   if (!slide) return
   const src = normalizeImageURL(url)
-  // Feed the blurred side-fill backdrop (see .hero-slide-ph::before).
-  slide.style.setProperty('--hero-bg', `url("${src}")`)
   slide.innerHTML = `<img src="${esc(src)}" alt="Banner" ${IMG_FALLBACK} />`
+  // Paint the slide with the image's own edge colour so the side space on
+  // wide screens blends into the banner instead of looking like a blank bar.
+  detectAndSetSlideBg(slide, src)
+}
+
+/* ─── Detecta a cor de fundo da imagem e pinta o slide ───────
+   Amostra as quatro quinas da imagem (a "moldura" costuma ser o fundo) e
+   usa a mediana por canal, para que o espaço nas laterais em telas largas
+   se misture com a imagem em vez de parecer uma barra vazia. As imagens do
+   Drive (lh3) enviam CORS "*", então a leitura no canvas funciona; se algo
+   bloquear, mantém o fundo padrão do slide. */
+// A URL da miniatura do Drive faz redirect (sem CORS) e "suja" o canvas.
+// A imagem lh3 direta envia CORS "*", então usamos ela só para amostrar a cor.
+function corsProbeURL(src) {
+  const m = src.match(/thumbnail\?id=([\w-]+)/) ||
+            src.match(/lh3\.googleusercontent\.com\/d\/([\w-]+)/)
+  return m ? `https://lh3.googleusercontent.com/d/${m[1]}=w200` : src
+}
+
+function detectAndSetSlideBg(slide, src) {
+  if (!slide || !src) return
+  const probe = new Image()
+  probe.crossOrigin = 'anonymous'
+  probe.onload = () => {
+    try {
+      const s = 32
+      const cv = document.createElement('canvas')
+      cv.width = s; cv.height = s
+      const ctx = cv.getContext('2d')
+      ctx.drawImage(probe, 0, 0, s, s)
+      const d = ctx.getImageData(0, 0, s, s).data
+      const px = []
+      const m = 3 // bloco de quina 3×3
+      const add = (x, y) => { const i = (y * s + x) * 4; px.push([d[i], d[i+1], d[i+2]]) }
+      for (let y = 0; y < m; y++) for (let x = 0; x < m; x++) {
+        add(x, y); add(s-1-x, y); add(x, s-1-y); add(s-1-x, s-1-y)
+      }
+      const med = k => { const v = px.map(p => p[k]).sort((a, b) => a - b); return v[v.length >> 1] }
+      slide.style.backgroundColor = `rgb(${med(0)}, ${med(1)}, ${med(2)})`
+    } catch (e) {
+      // canvas "tainted" (sem CORS) — mantém o fundo padrão do slide
+    }
+  }
+  probe.src = corsProbeURL(src)
 }
 
 /* ─── Announcement bar ──────────────────────────────────── */
@@ -713,5 +755,8 @@ function setAnnouncementText(text) {
 
 /* ─── Init ──────────────────────────────────────────────── */
 if (typeof PROMO_TEXT !== 'undefined' && PROMO_TEXT) setAnnouncementText(PROMO_TEXT)
+// Slide 1 (foto editorial fixa): refina a cor de fundo a partir da imagem
+const heroEditorial = document.querySelector('#hero-slides .hero-slide-ph img')
+if (heroEditorial) detectAndSetSlideBg(heroEditorial.closest('.hero-slide-ph'), heroEditorial.getAttribute('src'))
 loadBanner()
 loadProducts()

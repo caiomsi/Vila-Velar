@@ -214,23 +214,11 @@ ul { list-style: none; }
   background: var(--black);
 }
 
-/* Slides — Promo images (slide 1 = editorial photo, 2 & 3 = planilha) */
-.hero-slide-ph { background: #0c0c0c; }
-
-/* Soft blurred copy of the same image, filling the side space that a portrait
-   image leaves on a wide screen. Invisible on mobile, where the image fills
-   the slide completely. */
-.hero-slide-ph::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-image: var(--hero-bg);
-  background-size: cover;
-  background-position: center;
-  filter: blur(45px) brightness(.6) saturate(1.1);
-  transform: scale(1.25);
-}
+/* Slides — Promo images (slide 1 = editorial photo, 2 & 3 = planilha).
+   Each slide's background is set (by JS) to that image's own edge colour, so
+   the side space on wide screens blends into the image instead of looking
+   like a blank bar. #E79802 is the slide-1 poster colour as a no-JS default. */
+.hero-slide-ph { background: #0c0c0c; transition: background-color .4s ease; }
 
 .hero-slide-placeholder {
   display: flex;
@@ -260,16 +248,16 @@ ul { list-style: none; }
 /* Show the WHOLE image, adapting to the viewport:
    - narrow/tall screens (mobile): image fits full-width, height follows it
      naturally (edge-to-edge, no bars);
-   - wide screens (desktop): the image is capped to the viewport height so the
-     whole thing is visible without scrolling, centered, with a soft blurred
-     copy of itself (see ::before) filling the unavoidable side space. */
+   - wide screens (desktop): the image is capped to a comfortable height (not
+     the whole screen) and centered; the side space is painted with the image's
+     own background colour on the slide, so it reads as part of the banner. */
 .hero-slide-ph > img {
   display: block;
   position: relative;
   z-index: 1;
   width: 100%;
   height: auto;
-  max-height: calc(100vh - var(--top-h));
+  max-height: min(72vh, 700px);
   object-fit: contain;
   margin: 0 auto;
 }
