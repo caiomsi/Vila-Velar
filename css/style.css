@@ -217,6 +217,21 @@ ul { list-style: none; }
 /* Slides — Promo images (slide 1 = editorial photo, 2 & 3 = planilha) */
 .hero-slide-ph { background: #0c0c0c; }
 
+/* Soft blurred copy of the same image, filling the side space that a portrait
+   image leaves on a wide screen. Invisible on mobile, where the image fills
+   the slide completely. */
+.hero-slide-ph::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--hero-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(45px) brightness(.6) saturate(1.1);
+  transform: scale(1.25);
+}
+
 .hero-slide-placeholder {
   display: flex;
   flex-direction: column;
@@ -242,12 +257,21 @@ ul { list-style: none; }
   color: rgba(255,255,255,.1);
 }
 
-/* The banner IS the image: full width edge-to-edge, height follows the
-   image's natural proportions — nothing cropped, nothing filling the sides. */
+/* Show the WHOLE image, adapting to the viewport:
+   - narrow/tall screens (mobile): image fits full-width, height follows it
+     naturally (edge-to-edge, no bars);
+   - wide screens (desktop): the image is capped to the viewport height so the
+     whole thing is visible without scrolling, centered, with a soft blurred
+     copy of itself (see ::before) filling the unavoidable side space. */
 .hero-slide-ph > img {
   display: block;
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: auto;
+  max-height: calc(100vh - var(--top-h));
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 /* Arrows */
